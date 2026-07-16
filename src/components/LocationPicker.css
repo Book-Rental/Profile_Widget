@@ -1,0 +1,96 @@
+.location-picker {
+  --primary: #6d28d9;
+  --primary-hover: #5b21b6;
+  --primary-tint: #f5f3ff;
+  --border: #e4e4e7;
+  --text: #18181b;
+  --danger: #dc2626;
+  --danger-tint: #fef2f2;
+
+  position: relative;
+}
+
+.use-location-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  border: 1px solid var(--primary);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--primary);
+
+  padding: 8px 16px 8px 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  line-height: 1;
+
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.use-location-icon {
+  width: 22px;
+  height: 22px;
+  min-width: 22px;
+  border-radius: 50%;
+  background: var(--primary-tint);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.use-location-btn:hover:not(:disabled) {
+  background: var(--primary);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(109, 40, 217, 0.25);
+}
+
+.use-location-btn:hover:not(:disabled) .use-location-icon {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+.use-location-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.location-error-popover {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 10;
+
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  background: var(--danger-tint);
+  color: var(--danger);
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+}
+
+@media (max-width: 640px) {
+  .use-location-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .location-error-popover {
+    left: 0;
+    right: 0;
+    white-space: normal;
+  }
+}
