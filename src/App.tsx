@@ -1,19 +1,25 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import './App.css'
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import "./App.css";
 import "./index.css";
-import "@rentbook/rentbook-ui-lib/microfrontend.min.css"
-import Profile from './pages/Profile';
+import "@rentbook/rentbook-ui-lib/microfrontend.min.css";
 
+import Profile from "./pages/Profile";
+import AddressPage from "./pages/AddressPage";
+import { WidgetOptions } from "./index.widget";
 
 const queryClient = new QueryClient();
 
-function App() {
+interface AppProps {
+  options?: WidgetOptions;
+}
 
+function App({ options }: AppProps) {
 
-     return (
+  return (
     <QueryClientProvider client={queryClient}>
-      <Profile />
+      {options?.view === "address" ? <AddressPage /> : <Profile />}
     </QueryClientProvider>
   );
 }
-export default App
+
+export default App;

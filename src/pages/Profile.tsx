@@ -1,10 +1,18 @@
 
 import ProfileForm from "../components/ProfileForm";
 import AddressList from "../components/AddressList";
+import { useEffect } from "react";
 
 const Profile = () => {
-  const userId = "6a50d6d4716eb54b96411946";
+  const userId = window.HOST_USER_INFO._id;
+ 
 
+  useEffect(() => {
+    const event = new CustomEvent("widget-loading-status", {
+      detail: false
+    });
+    window.dispatchEvent(event);
+  }, []);
   return (
     <div className="profile-page">
       <div className="profile-container">
