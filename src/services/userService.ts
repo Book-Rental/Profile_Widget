@@ -1,8 +1,7 @@
 import axios from "axios";
 import { Address, UserResponse } from "../types/user";
 
-const API_URL = "https://be-book-rental.onrender.com/api";
- //const API_URL = "http://localhost:3000/api";
+const API_URL = import.meta.env.VITE_BACKEND_URL;
 
 export interface UpdateUserPayload {
   firstName?: string;
