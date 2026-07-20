@@ -1,37 +1,21 @@
 import "./AddressModal.css";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import {
-  Rb_Button,
-  Rb_Input,
-  Rb_Label,
-} from "@rentbook/rentbook-ui-lib";
+import { Rb_Button, Rb_Input, Rb_Label, } from "@rentbook/rentbook-ui-lib";
 import { FaTimes } from "react-icons/fa";
-
 import { Address } from "../types/user";
 import LocationPicker, { LocationData } from "./LocationPicker";
 
 interface AddressModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (address: Address) => void;
+  onSave: (address: Address) => Promise<void>;
   address?: Address | null;
 }
 
-const AddressModal = ({
-  isOpen,
-  onClose,
-  onSave,
-  address,
-}: AddressModalProps) => {
-  const {
-    register,
-    handleSubmit,
-    reset,
-    setValue,
-    formState: { errors },
-  } = useForm<Address>({
+const AddressModal = ({ isOpen, onClose, onSave, address, }: AddressModalProps) => {
+  const {register,handleSubmit,reset,setValue,formState: { errors },} = useForm<Address>({
     defaultValues: {
       name: "",
       type: "home",
@@ -49,8 +33,13 @@ const AddressModal = ({
     },
   });
 
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+
   useEffect(() => {
     if (!isOpen) return;
+
+    setSaveError(null);
 
     if (address) {
       reset({
@@ -120,25 +109,47 @@ const AddressModal = ({
     });
   };
 
-  const submit = (data: Address) => {
-    onSave({
-      ...data,
-      location: {
-        type: "Point",
-        coordinates:
-          data.location?.coordinates?.length === 2
-            ? data.location.coordinates
-            : [0, 0],
-      },
-    });
+  const submit = async (data: Address) => {
+    setSaveError(null);
+    setIsSaving(true);
 
-    reset();
+    try {
+      await onSave({
+        ...data,
+        location: {
+          type: "Point",
+          coordinates:
+            data.location?.coordinates?.length === 2
+              ? data.location.coordinates
+              : [0, 0],
+        },
+      });
+
+      // Only reset on success — the parent is responsible for closing
+      // the modal (it does so once its own save + reload completes).
+      reset();
+    } catch (err) {
+      console.log(err);
+      setSaveError("Something went wrong while saving. Please try again.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleOverlayClick = () => {
+    if (isSaving) return;
+    onClose();
+  };
+
+  const handleCloseClick = () => {
+    if (isSaving) return;
+    onClose();
   };
 
   return (
     <div
       className="modal-overlay"
-      onClick={onClose}
+      onClick={handleOverlayClick}
     >
       <div
         className="modal-card"
@@ -157,7 +168,9 @@ const AddressModal = ({
             <button
               type="button"
               className="close-btn"
-              onClick={onClose}
+              onClick={handleCloseClick}
+              disabled={isSaving}
+              aria-label="Close"
             >
               <FaTimes size={16} />
             </button>
@@ -178,10 +191,9 @@ const AddressModal = ({
                 Address Name
               </Rb_Label>
 
-
-
               <Rb_Input
                 placeholder="Home"
+                disabled={isSaving}
                 {...register("name")}
               />
             </div>
@@ -193,6 +205,7 @@ const AddressModal = ({
 
               <select
                 className="rb-select"
+                disabled={isSaving}
                 {...register("type", {
                   required: true,
                 })}
@@ -211,6 +224,7 @@ const AddressModal = ({
               <Rb_Input
                 placeholder="Phone Number"
                 maxLength={10}
+                disabled={isSaving}
                 {...register("phone", {
                   required: "Phone number is required",
                   pattern: {
@@ -234,6 +248,7 @@ const AddressModal = ({
 
               <Rb_Input
                 placeholder="Street"
+                disabled={isSaving}
                 {...register("street", {
                   required: "Street is required",
                 })}
@@ -253,6 +268,7 @@ const AddressModal = ({
 
               <Rb_Input
                 placeholder="City"
+                disabled={isSaving}
                 {...register("city", {
                   required: "City is required",
                 })}
@@ -272,6 +288,7 @@ const AddressModal = ({
 
               <Rb_Input
                 placeholder="State"
+                disabled={isSaving}
                 {...register("state", {
                   required: "State is required",
                 })}
@@ -291,6 +308,7 @@ const AddressModal = ({
 
               <Rb_Input
                 placeholder="Zip Code"
+                disabled={isSaving}
                 {...register("zipCode", {
                   required: "Zip Code is required",
                 })}
@@ -310,6 +328,7 @@ const AddressModal = ({
 
               <Rb_Input
                 placeholder="Country"
+                disabled={isSaving}
                 {...register("country", {
                   required: "Country is required",
                 })}
@@ -326,6 +345,7 @@ const AddressModal = ({
               <label className="checkbox-label">
                 <input
                   type="checkbox"
+                  disabled={isSaving}
                   {...register("isDefault")}
                 />
                 Set as Default Address
@@ -333,6 +353,12 @@ const AddressModal = ({
             </div>
 
           </div>
+
+          {saveError && (
+            <p className="error-text modal-error-banner">
+              {saveError}
+            </p>
+          )}
         </form>
 
         {/* Footer */}
@@ -340,7 +366,8 @@ const AddressModal = ({
         <div className="modal-footer">
           <Rb_Button
             variant="outline"
-            onClick={onClose}
+            onClick={handleCloseClick}
+            disabled={isSaving}
           >
             Cancel
           </Rb_Button>
@@ -348,8 +375,18 @@ const AddressModal = ({
           <Rb_Button
             type="submit"
             form="address-form"
+            disabled={isSaving}
           >
-            {address ? "Update Address" : "Save Address"}
+            {isSaving ? (
+              <span className="save-btn-loading">
+                <span className="btn-spinner-sm" />
+                {address ? "Updating..." : "Saving..."}
+              </span>
+            ) : address ? (
+              "Update Address"
+            ) : (
+              "Save Address"
+            )}
           </Rb_Button>
         </div>
       </div>
