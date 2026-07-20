@@ -14,8 +14,13 @@
 }
 
 @keyframes overlayIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 .modal-card {
@@ -45,8 +50,15 @@
 }
 
 @keyframes cardIn {
-  from { opacity: 0; transform: translateY(8px) scale(0.98); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .modal-header {
@@ -242,14 +254,15 @@
 }
 
 .form-group label {
-    width: 100%;
-    text-align: left;
-    font-size: 13px;
-    font-weight: 600;
-    color: #344054;
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
+  width: 100%;
+  text-align: left;
+  font-size: 13px;
+  font-weight: 600;
+  color: #344054;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
 }
+
 .save-btn-loading {
   display: inline-flex;
   align-items: center;
@@ -267,7 +280,9 @@
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .modal-error-banner {

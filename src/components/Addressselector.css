@@ -86,8 +86,6 @@
   color: var(--text-muted);
 }
 
-/* Skeleton loading — matches the grid it replaces */
-
 .address-skeleton-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -103,11 +101,15 @@
 }
 
 @keyframes shimmer {
-  0% { background-position: 100% 0; }
-  100% { background-position: 0 0; }
+  0% {
+    background-position: 100% 0;
+  }
+
+  100% {
+    background-position: 0 0;
+  }
 }
 
-/* Cards side-by-side, wrapping to as many columns as fit */
 
 .address-select-grid {
   display: grid;
@@ -155,8 +157,6 @@
   cursor: default;
 }
 
-/* Loading overlay shown on a card while it's being set as default */
-
 .address-card-loading-overlay {
   position: absolute;
   inset: 0;
@@ -199,7 +199,9 @@
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .address-select-radio {
@@ -297,8 +299,6 @@
   color: var(--text-muted);
 }
 
-/* Edit | Remove | Set as Default */
-
 .address-links-row {
   display: flex;
   align-items: center;
@@ -339,8 +339,6 @@
 .link-btn--danger {
   color: var(--danger);
 }
-
-/* Show more / show less */
 
 .show-more-btn {
   display: flex;

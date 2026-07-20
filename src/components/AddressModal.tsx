@@ -15,7 +15,7 @@ interface AddressModalProps {
 }
 
 const AddressModal = ({ isOpen, onClose, onSave, address, }: AddressModalProps) => {
-  const {register,handleSubmit,reset,setValue,formState: { errors },} = useForm<Address>({
+  const { register, handleSubmit, reset, setValue, formState: { errors }, } = useForm<Address>({
     defaultValues: {
       name: "",
       type: "home",
@@ -125,8 +125,6 @@ const AddressModal = ({ isOpen, onClose, onSave, address, }: AddressModalProps) 
         },
       });
 
-      // Only reset on success — the parent is responsible for closing
-      // the modal (it does so once its own save + reload completes).
       reset();
     } catch (err) {
       console.log(err);
@@ -176,8 +174,6 @@ const AddressModal = ({ isOpen, onClose, onSave, address, }: AddressModalProps) 
             </button>
           </div>
         </div>
-
-        {/* Form */}
 
         <form
           id="address-form"
@@ -361,7 +357,6 @@ const AddressModal = ({ isOpen, onClose, onSave, address, }: AddressModalProps) 
           )}
         </form>
 
-        {/* Footer */}
 
         <div className="modal-footer">
           <Rb_Button
