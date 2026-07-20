@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import AddressSelector from "../components/Addressselector";
 
 const AddressPage = () => {
-    const userId = window.HOST_USER_INFO._id;
+    const userId = window.HOST_USER_INFO?._id;
 
     const [currentAddressId, setCurrentAddressId] = useState<string | undefined>();
     useEffect(() => {
