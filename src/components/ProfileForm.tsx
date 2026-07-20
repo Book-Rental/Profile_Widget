@@ -85,7 +85,6 @@ const ProfileForm = ({
     setIsSaving(true);
 
     try {
-      // If backend supports multipart/form-data, use FormData here
       await updateUser(userId, {
         ...data,
         profilePic: profileFile || undefined,
@@ -94,10 +93,10 @@ const ProfileForm = ({
       setUser((prev) =>
         prev
           ? {
-              ...prev,
-              ...data,
-              profilePic: profilePreview || prev.profilePic,
-            }
+            ...prev,
+            ...data,
+            profilePic: profilePreview || prev.profilePic,
+          }
           : prev
       );
 
@@ -105,8 +104,6 @@ const ProfileForm = ({
       setIsEdit(false);
     } catch (err) {
       console.log(err);
-      // Stay in edit mode so nothing typed/picked gets lost, and let
-      // the person know the save didn't go through.
       setSaveError("Something went wrong while updating your profile. Please try again.");
     } finally {
       setIsSaving(false);

@@ -1,16 +1,13 @@
 export interface Address {
   _id?: string;
   id?: string;
-
   name: string;
   type: "home" | "work" | "other";
-
   street: string;
   city: string;
   state: string;
   zipCode: string;
   country: string;
-
   phone: string;
   isDefault: boolean;
 

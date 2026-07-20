@@ -6,7 +6,7 @@ import AddressSelector from "../components/Addressselector";
 
 const Profile = () => {
   const userId = window.HOST_USER_INFO._id;
- 
+
 
   useEffect(() => {
     const event = new CustomEvent("widget-loading-status", {

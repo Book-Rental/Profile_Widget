@@ -32,15 +32,10 @@ import { Address } from "../types/user";
 
 interface AddressSelectorProps {
   userId: string;
-  /** Currently selected address id (controlled). If omitted, component manages its own selection state. */
   selectedAddressId?: string | null;
-  /** Called whenever the user picks an address via the radio control. */
   onSelect?: (address: Address) => void;
-  /** Show the Edit/Remove/Set-as-default links on each card. Default: true. Set to false for a pure "view + pick" widget. */
   showActions?: boolean;
-  /** Show the "Add Address" button in the header. Default: true. Set to false for a pure "view + pick" widget. */
   showAddButton?: boolean;
-  /** How many addresses to show before collapsing behind a "Show more" button. Default: 4. */
   visibleCount?: number;
 }
 
@@ -55,8 +50,6 @@ const typeIcon = (type?: string) => {
   }
 };
 
-// Default address always floats to the top; original order is
-// otherwise preserved among the rest.
 const sortWithDefaultFirst = (list: Address[]) =>
   [...list].sort((a, b) => {
     if (!!a.isDefault === !!b.isDefault) return 0;
@@ -86,7 +79,6 @@ const AddressSelector = ({
   const [settingDefaultId, setSettingDefaultId] =
     useState<string | null>(null);
 
-  // Falls back to internal state if the parent doesn't control selection.
   const [internalSelectedId, setInternalSelectedId] =
     useState<string | null>(null);
 
@@ -109,7 +101,6 @@ const AddressSelector = ({
       const sorted = sortWithDefaultFirst(response.data);
       setAddresses(sorted);
 
-      // Default to the address marked as default, if nothing is selected yet.
       if (
         selectedAddressId === undefined &&
         internalSelectedId === null
@@ -142,8 +133,6 @@ const AddressSelector = ({
   };
 
   const handleSelect = (address: Address) => {
-    // Ignore clicks on other cards while a "set default" call is in flight,
-    // so the selection can't drift out of sync with the pending request.
     if (settingDefaultId) return;
     selectAddress(address);
   };
@@ -162,7 +151,7 @@ const AddressSelector = ({
     setOpenAddressModal(true);
   };
 
-const handleSaveAddress = async (
+  const handleSaveAddress = async (
     address: Address
   ) => {
     try {
@@ -180,14 +169,12 @@ const handleSaveAddress = async (
           userId,
           address
         );
-        // Adjust this line if your addAddress response shape differs
-        // (e.g. created.data._id) — it just needs the new address's id.
         savedId = created?.data?._id ?? null;
       }
 
       const refreshed = await loadAddresses();
 
-     
+
       const savedAddress = refreshed.find(
         (a: Address) => a._id === savedId
       );
@@ -247,17 +234,10 @@ const handleSaveAddress = async (
     if (!address._id || address.isDefault || settingDefaultId) return;
 
     const addressId = address._id;
-
-    // Snapshot so we can roll back cleanly if the request fails.
     const previousAddresses = addresses;
     const previousSelectedId = internalSelectedId;
 
     setSettingDefaultId(addressId);
-
-    // Optimistic update: mark this card default, unmark the rest, re-sort,
-    // and select it immediately. This is what actually fixes the radio
-    // appearing "stuck" — before, the UI waited on a full reload+lookup
-    // before the dot ever moved, so it looked unresponsive/disabled.
     const optimistic = sortWithDefaultFirst(
       addresses.map((a) => ({
         ...a,
@@ -268,9 +248,6 @@ const handleSaveAddress = async (
     selectAddress({ ...address, isDefault: true });
 
     try {
-      // NOTE: this assumes the backend clears isDefault on the
-      // user's other addresses when one is marked default. If it
-      // doesn't, that "only one default" rule needs to move there.
       await updateAddress(
         userId,
         addressId,
@@ -281,7 +258,6 @@ const handleSaveAddress = async (
     } catch (err) {
       console.log(err);
 
-      // Roll back the optimistic change on failure.
       setAddresses(previousAddresses);
       if (selectedAddressId === undefined) {
         setInternalSelectedId(previousSelectedId);

@@ -7,7 +7,7 @@ export interface UpdateUserPayload {
   firstName?: string;
   lastName?: string;
   email?: string;
-    profilePic?: File;
+  profilePic?: File;
 }
 
 export const getUser = async (
