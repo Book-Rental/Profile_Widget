@@ -19,7 +19,7 @@ const AddressPage = () => {
                     showActions={false}
                     showAddButton={false}
                     selectedAddressId={currentAddressId}
-                    onSelect={(addr) => setCurrentAddressId(addr._id)}
+                    onSelect={(addr) => setCurrentAddressId(addr?._id)}
                 />
             </div>
         </div>
