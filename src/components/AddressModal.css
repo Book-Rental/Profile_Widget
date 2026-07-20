@@ -250,3 +250,30 @@
     text-transform: uppercase;
     letter-spacing: 0.03em;
 }
+.save-btn-loading {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-spinner-sm {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #ffffff;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.modal-error-banner {
+  margin-top: 4px;
+  padding: 10px 12px;
+  background: var(--danger-tint);
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+}

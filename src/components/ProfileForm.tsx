@@ -33,6 +33,10 @@ const ProfileForm = ({
   const [profilePreview, setProfilePreview] = useState<string | null>(null);
   const [profileFile, setProfileFile] = useState<File | null>(null);
 
+  const [isLoadingProfile, setIsLoadingProfile] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+
   const {
     register,
     handleSubmit,
@@ -45,6 +49,7 @@ const ProfileForm = ({
 
   const loadProfile = async () => {
     try {
+      setIsLoadingProfile(true);
       const response = await getUser(userId);
       const userData = response.data;
 
@@ -58,6 +63,8 @@ const ProfileForm = ({
       });
     } catch (err) {
       console.log(err);
+    } finally {
+      setIsLoadingProfile(false);
     }
   };
 
@@ -74,12 +81,15 @@ const ProfileForm = ({
   const onSubmit = async (
     data: ProfileFormValues
   ) => {
+    setSaveError(null);
+    setIsSaving(true);
+
     try {
       // If backend supports multipart/form-data, use FormData here
-    await updateUser(userId, {
-  ...data,
-  profilePic: profileFile || undefined,
-});
+      await updateUser(userId, {
+        ...data,
+        profilePic: profileFile || undefined,
+      });
 
       setUser((prev) =>
         prev
@@ -91,14 +101,20 @@ const ProfileForm = ({
           : prev
       );
 
+      setProfileFile(null);
       setIsEdit(false);
     } catch (err) {
       console.log(err);
+      // Stay in edit mode so nothing typed/picked gets lost, and let
+      // the person know the save didn't go through.
+      setSaveError("Something went wrong while updating your profile. Please try again.");
+    } finally {
+      setIsSaving(false);
     }
   };
 
   const handleCancel = () => {
-    if (!user) return;
+    if (!user || isSaving) return;
 
     reset({
       email: user.email,
@@ -108,23 +124,26 @@ const ProfileForm = ({
 
     setProfilePreview(user.profilePic || null);
     setProfileFile(null);
+    setSaveError(null);
     setIsEdit(false);
   };
-const getInitials = () => {
-  if (!user) return "";
 
-  const first = user.firstName?.trim()?.charAt(0) || "";
-  const last = user.lastName?.trim()?.charAt(0) || "";
+  const getInitials = () => {
+    if (!user) return "";
 
-  return `${first}${last}`.toUpperCase();
-};
+    const first = user.firstName?.trim()?.charAt(0) || "";
+    const last = user.lastName?.trim()?.charAt(0) || "";
+
+    return `${first}${last}`.toUpperCase();
+  };
+
   return (
     <div className="profile-card">
       <div className="profile-header">
         <h2 className="profile-title">My Profile</h2>
 
         {!isEdit ? (
-          <Rb_Button onClick={() => setIsEdit(true)}>
+          <Rb_Button onClick={() => setIsEdit(true)} disabled={isLoadingProfile}>
             Edit
           </Rb_Button>
         ) : (
@@ -132,66 +151,94 @@ const getInitials = () => {
             <Rb_Button
               variant="outline"
               onClick={handleCancel}
+              disabled={isSaving}
             >
               Cancel
             </Rb_Button>
 
             <Rb_Button
               onClick={handleSubmit(onSubmit)}
+              disabled={isSaving}
             >
-              Update
+              {isSaving ? (
+                <span className="btn-loading-content">
+                  <span className="btn-spinner" />
+                  {profileFile ? "Uploading..." : "Updating..."}
+                </span>
+              ) : (
+                "Update"
+              )}
             </Rb_Button>
           </div>
         )}
       </div>
-<div className="profile-picture-section">
-  <div className="profile-picture-wrapper">
-    {profilePreview ? (
-      <img
-        src={profilePreview}
-        alt="Profile"
-        className="profile-picture"
-      />
-    ) : (
-      <div className="profile-picture initials-avatar">
-        {getInitials()}
+
+      <div className="profile-picture-section">
+        <div className="profile-picture-wrapper">
+          {profilePreview ? (
+            <img
+              src={profilePreview}
+              alt="Profile"
+              className={"profile-picture" + (isSaving && profileFile ? " profile-picture--uploading" : "")}
+            />
+          ) : (
+            <div className="profile-picture initials-avatar">
+              {getInitials()}
+            </div>
+          )}
+
+          {isSaving && profileFile && (
+            <div className="avatar-upload-overlay" aria-live="polite">
+              <span className="avatar-spinner" />
+              <span className="avatar-upload-text">Uploading</span>
+            </div>
+          )}
+
+          {isEdit && !isSaving && (
+            <label className="upload-overlay">
+              <input
+                type="file"
+                accept="image/*"
+                hidden
+                onChange={handleProfileChange}
+              />
+              Change
+            </label>
+          )}
+        </div>
+
+        <div className="profile-user-info">
+          <h3>
+            {user?.firstName} {user?.lastName}
+          </h3>
+
+          <p>{user?.email}</p>
+
+          {isEdit && !isSaving && (
+            <span className="change-photo-text">
+              Click on the image to change profile photo
+            </span>
+          )}
+
+          {isSaving && (
+            <span className="saving-status-text">
+              <span className="btn-spinner btn-spinner--muted" />
+              {profileFile ? "Uploading photo and saving changes…" : "Saving changes…"}
+            </span>
+          )}
+        </div>
       </div>
-    )}
 
-    {isEdit && (
-      <label className="upload-overlay">
-        <input
-          type="file"
-          accept="image/*"
-          hidden
-          onChange={handleProfileChange}
-        />
-        Change
-      </label>
-    )}
-  </div>
-
-  <div className="profile-user-info">
-    <h3>
-      {user?.firstName} {user?.lastName}
-    </h3>
-
-    <p>{user?.email}</p>
-
-    {isEdit && (
-      <span className="change-photo-text">
-        Click on the image to change profile photo
-      </span>
-    )}
-  </div>
-</div>
+      {saveError && (
+        <p className="profile-error-banner">{saveError}</p>
+      )}
 
       <div className="profile-form">
         <div className="form-field full-width">
           <Rb_Label required>Email</Rb_Label>
           <div className={!isEdit ? "disabled-field" : ""}>
             <Rb_Input
-              disabled={!isEdit}
+              disabled={!isEdit || isSaving}
               {...register("email")}
             />
           </div>
@@ -202,7 +249,7 @@ const getInitials = () => {
             <Rb_Label required>First Name</Rb_Label>
             <div className={!isEdit ? "disabled-field" : ""}>
               <Rb_Input
-                disabled={!isEdit}
+                disabled={!isEdit || isSaving}
                 {...register("firstName")}
               />
             </div>
@@ -212,7 +259,7 @@ const getInitials = () => {
             <Rb_Label required>Last Name</Rb_Label>
             <div className={!isEdit ? "disabled-field" : ""}>
               <Rb_Input
-                disabled={!isEdit}
+                disabled={!isEdit || isSaving}
                 {...register("lastName")}
               />
             </div>
