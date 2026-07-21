@@ -91,10 +91,17 @@ const AddressSelector = ({
       : internalSelectedId;
 
   useEffect(() => {
+    // console.log("AddressSelector userId:", userId);
+
+    if (!userId) {
+      console.error("userId is undefined");
+      return;
+    }
     loadAddresses();
   }, [userId]);
 
   const loadAddresses = async () => {
+    // console.log("Loading addresses for:", userId);
     try {
       setLoading(true);
       const response = await getAddresses(userId);
