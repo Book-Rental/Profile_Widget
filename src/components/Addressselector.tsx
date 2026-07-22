@@ -117,6 +117,7 @@ const AddressSelector = ({
         );
         if (defaultAddress?._id) {
           setInternalSelectedId(defaultAddress._id);
+          onSelect?.(defaultAddress);
         }
       }
 
