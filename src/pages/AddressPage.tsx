@@ -28,7 +28,7 @@ const AddressPage = () => {
         );
     };
     return (
-        <div className="profile-page">
+   <div className="profile-page profile-page--embedded">
             <div className="profile-container">
                 <AddressSelector
                     userId={userId}
