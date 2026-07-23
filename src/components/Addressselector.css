@@ -87,16 +87,16 @@
 }
 
 .address-skeleton-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  /* display: grid; */
+  /* grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); */
   gap: 14px;
 }
 
 .address-skeleton {
-  height: 150px;
+  /* height: 150px; */
   border-radius: 14px;
   background: linear-gradient(90deg, #f4f4f5 25%, #ececee 37%, #f4f4f5 63%);
-  background-size: 400% 100%;
+  /* background-size: 400% 100%; */
   animation: shimmer 1.4s ease infinite;
 }
 
@@ -117,6 +117,7 @@
   gap: 14px;
 }
 
+
 .address-select-container .address-select-card {
   background-color: #ffffff !important;
   background-image: none !important;
@@ -128,17 +129,15 @@
   gap: 12px;
 
   border: 1px solid var(--border) !important;
-  border-left: 3px solid transparent !important;
   border-radius: 14px;
 
-  padding: 16px 16px 16px 14px;
+  padding: 16px;
   cursor: pointer;
-  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+  transition: border-color 0.15s ease;
 }
 
 .address-select-container .address-select-card:hover {
-  border-color: #d4d4d8 !important;
-  box-shadow: 0 4px 14px rgba(24, 24, 27, 0.06);
+  border-color: #c4c4c9 !important;
 }
 
 .address-select-container .address-select-card:focus-visible {
@@ -148,9 +147,7 @@
 
 .address-select-container .address-select-card--active {
   background-color: #ffffff !important;
-  border-color: var(--primary) !important;
-  border-left-color: var(--primary) !important;
-  box-shadow: 0 4px 14px rgba(109, 40, 217, 0.12);
+  border-color: #9ca3af !important;
 }
 
 .address-select-container .address-select-card--busy {
@@ -376,4 +373,52 @@
   .address-select-grid {
     grid-template-columns: 1fr;
   }
+}
+.confirm-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(16, 24, 40, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+}
+
+.confirm-modal {
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 24px;
+  max-width: 380px;
+  width: 100%;
+  box-shadow: 0 20px 40px rgba(16, 24, 40, 0.18);
+}
+
+.confirm-modal-title {
+  margin: 0 0 10px;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.confirm-modal-text {
+  margin: 0 0 20px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.confirm-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.confirm-modal-danger-btn {
+  background: var(--danger) !important;
+  border-color: var(--danger) !important;
+}
+
+.confirm-modal-danger-btn:hover {
+  background: #b91c1c !important;
 }

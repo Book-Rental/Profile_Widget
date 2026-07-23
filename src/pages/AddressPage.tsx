@@ -29,11 +29,11 @@ const AddressPage = () => {
     };
     return (
    <div className="profile-page profile-page--embedded">
-            <div className="profile-container">
+            <div className="profile-containers">
                 <AddressSelector
                     userId={userId}
                     showActions={false}
-                    showAddButton={false}
+                    // showAddButton={false}
                     selectedAddressId={currentAddressId}
                     onSelect={handleAddressSelect}
                 />

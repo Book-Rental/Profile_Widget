@@ -14,6 +14,8 @@ import {
 } from "../services/userService";
 
 import { User } from "../types/user";
+import { showToast } from "../utils/showToast";
+
 
 interface ProfileFormProps {
   userId: string;
@@ -63,6 +65,7 @@ const ProfileForm = ({
       });
     } catch (err) {
       console.log(err);
+      showToast("Failed to load profile. Please try again.", "error");
     } finally {
       setIsLoadingProfile(false);
     }
@@ -102,9 +105,13 @@ const ProfileForm = ({
 
       setProfileFile(null);
       setIsEdit(false);
+
+      showToast("Profile updated successfully.", "success");
     } catch (err) {
       console.log(err);
-      setSaveError("Something went wrong while updating your profile. Please try again.");
+      const message = "Something went wrong while updating your profile. Please try again.";
+      setSaveError(message);
+      showToast(message, "error");
     } finally {
       setIsSaving(false);
     }
@@ -233,9 +240,9 @@ const ProfileForm = ({
       <div className="profile-form">
         <div className="form-field full-width">
           <Rb_Label required>Email</Rb_Label>
-          <div className={!isEdit ? "disabled-field" : ""}>
+          <div className="disabled-field">
             <Rb_Input
-              disabled={!isEdit || isSaving}
+              disabled
               {...register("email")}
             />
           </div>
