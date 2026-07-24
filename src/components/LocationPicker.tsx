@@ -1,6 +1,8 @@
 import "./LocationPicker.css";
-import { useState, useRef, useEffect } from "react";
-import { FaLocationArrow, FaExclamationCircle } from "react-icons/fa";
+import { useState } from "react";
+import { FaLocationArrow } from "react-icons/fa";
+import { showToast } from "../utils/showToast";
+
 
 const OPENCAGE_API_KEY = import.meta.env.VITE_OPENCAGE_API_KEY;
 
@@ -31,28 +33,10 @@ const LocationPicker = ({
   onLocationSelect,
 }: LocationPickerProps) => {
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-
-  const errorTimeout = useRef<ReturnType<typeof setTimeout>>();
-
-  useEffect(() => {
-    return () => {
-      if (errorTimeout.current) clearTimeout(errorTimeout.current);
-    };
-  }, []);
-
-  const showError = (message: string) => {
-    setError(message);
-
-    if (errorTimeout.current) clearTimeout(errorTimeout.current);
-    errorTimeout.current = setTimeout(() => setError(""), 4000);
-  };
 
   const getCurrentLocation = () => {
-    setError("");
-
     if (!navigator.geolocation) {
-      showError("Geolocation is not supported by this browser.");
+      showToast("Geolocation is not supported by this browser.", "error");
       return;
     }
 
@@ -79,11 +63,13 @@ const LocationPicker = ({
               address: result.formatted,
               addressComponents: result.components,
             });
+
+            showToast("Location detected successfully.", "success");
           } else {
-            showError("Unable to fetch address for this location.");
+            showToast("Unable to fetch address for this location.", "error");
           }
         } catch (err) {
-          showError("Failed to fetch location. Please try again.");
+          showToast("Failed to fetch location. Please try again.", "error");
         } finally {
           setLoading(false);
         }
@@ -93,16 +79,16 @@ const LocationPicker = ({
 
         switch (err.code) {
           case err.PERMISSION_DENIED:
-            showError("Location permission denied.");
+            showToast("Location permission denied.", "error");
             break;
           case err.POSITION_UNAVAILABLE:
-            showError("Location unavailable.");
+            showToast("Location unavailable.", "error");
             break;
           case err.TIMEOUT:
-            showError("Location request timed out.");
+            showToast("Location request timed out.", "error");
             break;
           default:
-            showError("Unable to get your location.");
+            showToast("Unable to get your location.", "error");
         }
       },
       {
@@ -125,13 +111,6 @@ const LocationPicker = ({
         </span>
         {loading ? "Locating..." : "Use Current Location"}
       </button>
-
-      {error && (
-        <div className="location-error-popover">
-          <FaExclamationCircle size={12} />
-          {error}
-        </div>
-      )}
     </div>
   );
 };

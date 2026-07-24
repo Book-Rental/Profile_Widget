@@ -6,6 +6,8 @@ import { Rb_Button, Rb_Input, Rb_Label, } from "@rentbook/rentbook-ui-lib";
 import { FaTimes } from "react-icons/fa";
 import { Address } from "../types/user";
 import LocationPicker, { LocationData } from "./LocationPicker";
+import { showToast } from "../utils/showToast";
+
 
 interface AddressModalProps {
   isOpen: boolean;
@@ -78,13 +80,18 @@ const AddressModal = ({ isOpen, onClose, onSave, address, }: AddressModalProps) 
 
   if (!isOpen) return null;
 
+const UNNAMED_ROAD_PATTERN = /^unnamed road$/i;
+
+const cleanField = (value?: string) =>
+  value && !UNNAMED_ROAD_PATTERN.test(value.trim()) ? value : "";
+
   const handleLocationSelect = (location: LocationData) => {
     const components = location.addressComponents;
 
     const street =
-      components.road ||
-      components.neighbourhood ||
-      components.suburb ||
+    cleanField(components.road) ||
+    cleanField(components.neighbourhood) ||
+    cleanField(components.suburb) ||
       "";
 
     const city =
@@ -125,10 +132,17 @@ const AddressModal = ({ isOpen, onClose, onSave, address, }: AddressModalProps) 
         },
       });
 
+      showToast(
+        address ? "Address updated successfully." : "Address saved successfully.",
+        "success"
+      );
+
       reset();
     } catch (err) {
       console.log(err);
-      setSaveError("Something went wrong while saving. Please try again.");
+      const message = "Something went wrong while saving. Please try again.";
+      setSaveError(message);
+      showToast(message, "error");
     } finally {
       setIsSaving(false);
     }

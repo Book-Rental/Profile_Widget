@@ -29,6 +29,7 @@ import {
 } from "../services/userService";
 
 import { Address } from "../types/user";
+import { showToast } from "../utils/showToast";
 
 interface AddressSelectorProps {
   userId: string;
@@ -85,14 +86,15 @@ const AddressSelector = ({
   const [expanded, setExpanded] =
     useState(false);
 
+  const [deleteTarget, setDeleteTarget] = useState<Address | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
   const activeSelectedId =
     selectedAddressId !== undefined
       ? selectedAddressId
       : internalSelectedId;
 
   useEffect(() => {
-    // console.log("AddressSelector userId:", userId);
-
     if (!userId) {
       console.error("userId is undefined");
       return;
@@ -101,7 +103,6 @@ const AddressSelector = ({
   }, [userId]);
 
   const loadAddresses = async () => {
-    // console.log("Loading addresses for:", userId);
     try {
       setLoading(true);
       const response = await getAddresses(userId);
@@ -200,36 +201,37 @@ const AddressSelector = ({
     }
   };
 
-  const handleDeleteAddress = async (
+  const handleDeleteAddress = (
     e: React.MouseEvent,
     address: Address
   ) => {
     e.stopPropagation();
+    setDeleteTarget(address);
+  };
 
-    if (!address._id) return;
+  const confirmDeleteAddress = async () => {
+    if (!deleteTarget?._id) return;
 
-    const confirmed =
-      window.confirm(
-        "Delete this address? This action cannot be undone."
-      );
-
-    if (!confirmed) return;
-
+    setIsDeleting(true);
     try {
-      await deleteAddress(
-        userId,
-        address._id
-      );
+      await deleteAddress(userId, deleteTarget._id);
 
-      if (activeSelectedId === address._id) {
+      if (activeSelectedId === deleteTarget._id) {
         if (selectedAddressId === undefined) {
           setInternalSelectedId(null);
         }
       }
 
       await loadAddresses();
+
+      showToast("Address deleted successfully.", "success");
+
+      setDeleteTarget(null);
     } catch (err) {
       console.log(err);
+      showToast("Failed to delete address. Please try again.", "error");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -494,6 +496,52 @@ const AddressSelector = ({
                   </>
                 )}
               </button>
+            )}
+
+
+            {deleteTarget && (
+              <div
+                className="confirm-modal-overlay"
+                onClick={() => !isDeleting && setDeleteTarget(null)}
+              >
+                <div
+                  className="confirm-modal"
+                  onClick={(e) => e.stopPropagation()}
+                  role="dialog"
+                  aria-modal="true"
+                >
+                  <h3 className="confirm-modal-title">Delete this address?</h3>
+                  <p className="confirm-modal-text">
+                    This action cannot be undone. Are you sure you want to remove{" "}
+                    <strong>{deleteTarget.name || "this address"}</strong>?
+                  </p>
+
+                  <div className="confirm-modal-actions">
+                    <Rb_Button
+                      variant="outline"
+                      onClick={() => setDeleteTarget(null)}
+                      disabled={isDeleting}
+                    >
+                      Cancel
+                    </Rb_Button>
+
+                    <Rb_Button
+                      className="confirm-modal-danger-btn"
+                      onClick={confirmDeleteAddress}
+                      disabled={isDeleting}
+                    >
+                      {isDeleting ? (
+                        <>
+                          <span className="btn-spinner-sm" />
+                          Deleting...
+                        </>
+                      ) : (
+                        "Delete"
+                      )}
+                    </Rb_Button>
+                  </div>
+                </div>
+              </div>
             )}
           </>
         )}
