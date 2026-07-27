@@ -1,13 +1,17 @@
-import "./AddressModal.css";
-
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { Rb_Button, Rb_Input, Rb_Label, } from "@rentbook/rentbook-ui-lib";
+import {
+  Rb_Button,
+  Rb_Input,
+  Rb_Label,
+} from "@rentbook/rentbook-ui-lib";
 import { FaTimes } from "react-icons/fa";
-import { Address } from "../types/user";
-import LocationPicker, { LocationData } from "./LocationPicker";
-import { showToast } from "../utils/showToast";
 
+import { Address } from "../types/user";
+import LocationPicker, {
+  LocationData,
+} from "./LocationPicker";
+import { showToast } from "../utils/showToast";
 
 interface AddressModalProps {
   isOpen: boolean;
@@ -16,8 +20,19 @@ interface AddressModalProps {
   address?: Address | null;
 }
 
-const AddressModal = ({ isOpen, onClose, onSave, address, }: AddressModalProps) => {
-  const { register, handleSubmit, reset, setValue, formState: { errors }, } = useForm<Address>({
+const AddressModal = ({
+  isOpen,
+  onClose,
+  onSave,
+  address,
+}: AddressModalProps) => {
+  const {
+    register,
+    handleSubmit,
+    reset,
+    setValue,
+    formState: { errors },
+  } = useForm<Address>({
     defaultValues: {
       name: "",
       type: "home",
@@ -80,18 +95,22 @@ const AddressModal = ({ isOpen, onClose, onSave, address, }: AddressModalProps) 
 
   if (!isOpen) return null;
 
-const UNNAMED_ROAD_PATTERN = /^unnamed road$/i;
+  const UNNAMED_ROAD_PATTERN = /^unnamed road$/i;
 
-const cleanField = (value?: string) =>
-  value && !UNNAMED_ROAD_PATTERN.test(value.trim()) ? value : "";
+  const cleanField = (value?: string) =>
+    value && !UNNAMED_ROAD_PATTERN.test(value.trim())
+      ? value
+      : "";
 
-  const handleLocationSelect = (location: LocationData) => {
+  const handleLocationSelect = (
+    location: LocationData
+  ) => {
     const components = location.addressComponents;
 
     const street =
-    cleanField(components.road) ||
-    cleanField(components.neighbourhood) ||
-    cleanField(components.suburb) ||
+      cleanField(components.road) ||
+      cleanField(components.neighbourhood) ||
+      cleanField(components.suburb) ||
       "";
 
     const city =
@@ -112,7 +131,10 @@ const cleanField = (value?: string) =>
 
     setValue("location", {
       type: "Point",
-      coordinates: [location.lng, location.lat],
+      coordinates: [
+        location.lng,
+        location.lat,
+      ],
     });
   };
 
@@ -133,16 +155,25 @@ const cleanField = (value?: string) =>
       });
 
       showToast(
-        address ? "Address updated successfully." : "Address saved successfully.",
+        address
+          ? "Address updated successfully."
+          : "Address saved successfully.",
         "success"
       );
 
       reset();
     } catch (err) {
       console.log(err);
-      const message = "Something went wrong while saving. Please try again.";
+
+      const message =
+        "Something went wrong while saving. Please try again.";
+
       setSaveError(message);
-      showToast(message, "error");
+
+      showToast(
+        message,
+        "error"
+      );
     } finally {
       setIsSaving(false);
     }
@@ -160,244 +191,531 @@ const cleanField = (value?: string) =>
 
   return (
     <div
-      className="modal-overlay"
       onClick={handleOverlayClick}
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/55 p-3 backdrop-blur-sm sm:p-4"
     >
       <div
-        className="modal-card"
         onClick={(e) => e.stopPropagation()}
+        className="
+           relative
+    flex
+    w-full
+    max-w-[720px]
+    max-h-[90vh]
+    flex-col
+    overflow-hidden
+    rounded-2xl
+    bg-white
+    shadow-2xl
+        "
       >
-        {/* Header */}
-
-        <div className="modal-header">
-          <h3 className="modal-title">
+        <div
+          className="
+    flex
+    min-w-0
+    items-center
+    justify-between
+    gap-3
+    border-b
+    border-gray-200
+    px-4
+    py-3
+    sm:px-6
+    sm:py-4
+  "
+        >
+          <h3
+            className="
+      min-w-0
+      truncate
+      text-lg
+      font-semibold
+      text-gray-900
+      sm:text-2xl
+    "
+          >
             {address ? "Edit Address" : "Add Address"}
           </h3>
 
-          <div className="modal-header-actions">
-            <LocationPicker onLocationSelect={handleLocationSelect} />
+          <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+            <LocationPicker
+              onLocationSelect={handleLocationSelect}
+            />
 
             <button
               type="button"
-              className="close-btn"
               onClick={handleCloseClick}
               disabled={isSaving}
-              aria-label="Close"
+              aria-label="Close modal"
+              className="
+        flex
+        h-9
+        w-9
+        shrink-0
+        items-center
+        justify-center
+        rounded-full
+        text-gray-500
+        transition
+        hover:bg-gray-100
+        hover:text-gray-700
+        disabled:cursor-not-allowed
+        disabled:opacity-50
+      "
             >
               <FaTimes size={16} />
             </button>
           </div>
         </div>
-
         <form
           id="address-form"
-          className="modal-body"
           onSubmit={handleSubmit(submit)}
+          className="
+            flex-1
+            overflow-y-auto
+            px-4
+            py-5
+            sm:px-6
+            sm:py-6
+          "
         >
-          <div className="address-grid">
-
-            <div className="form-group">
-              <Rb_Label>
+          <div
+            className="
+              grid
+              grid-cols-1
+              gap-x-5
+              gap-y-4
+              md:grid-cols-2
+            "
+          >
+            <div className="flex min-w-0 flex-col gap-1">
+              <Rb_Label
+                className="
+                  text-xs
+                  font-semibold
+                  uppercase
+                  tracking-wide
+                  text-gray-700
+                "
+              >
                 Address Name
               </Rb_Label>
 
               <Rb_Input
+                className="
+                  w-full
+                  rounded-lg
+                  border
+                  border-gray-300
+                  px-3
+                  text-sm
+                  text-gray-700
+                "
                 placeholder="Home"
                 disabled={isSaving}
                 {...register("name")}
               />
             </div>
 
-            <div className="form-group">
-              <Rb_Label required>
+            <div className="flex min-w-0 flex-col gap-1">
+              <Rb_Label
+                required
+                className="
+                  !mb-2.5
+                  text-xs
+                  font-semibold
+                  uppercase
+                  tracking-wide
+                  text-gray-700
+                "
+              >
                 Type
               </Rb_Label>
 
               <select
-                className="rb-select"
+                {...register("type")}
                 disabled={isSaving}
-                {...register("type", {
-                  required: true,
-                })}
+                className="
+                  h-[38px]
+                  w-full
+                  rounded-lg
+                  border
+                  border-gray-300
+                  bg-white
+                  px-3
+                  text-sm
+                  text-gray-700
+                  outline-none
+                  transition
+                  focus:border-violet-500
+                  focus:ring-2
+                  focus:ring-violet-100
+                  disabled:cursor-not-allowed
+                  disabled:bg-gray-50
+                "
               >
-                <option value="home">Home</option>
-                <option value="work">Work</option>
-                <option value="other">Other</option>
+                <option value="home">
+                  Home
+                </option>
+
+                <option value="work">
+                  Work
+                </option>
+
+                <option value="other">
+                  Other
+                </option>
               </select>
             </div>
 
-            <div className="form-group full-width">
-              <Rb_Label required>
+            <div
+              className="
+                flex
+                min-w-0
+                flex-col
+                gap-1
+                md:col-span-2
+              "
+            >
+              <Rb_Label
+                required
+                className="
+                  text-xs
+                  font-semibold
+                  uppercase
+                  tracking-wide
+                  text-gray-600
+                "
+              >
                 Phone
               </Rb_Label>
 
               <Rb_Input
+                className="
+                  w-full
+                  rounded-lg
+                  border
+                  border-gray-300
+                  px-3
+                  text-sm
+                  text-gray-700
+                "
                 placeholder="Phone Number"
                 maxLength={10}
                 disabled={isSaving}
                 {...register("phone", {
-                  required: "Phone number is required",
+                  required:
+                    "Phone number is required",
                   pattern: {
                     value: /^[0-9]{10}$/,
-                    message: "Enter a valid phone number",
+                    message:
+                      "Enter a valid phone number",
                   },
                 })}
               />
 
               {errors.phone && (
-                <p className="error-text">
+                <p className="text-xs text-red-600">
                   {errors.phone.message}
                 </p>
               )}
             </div>
 
-            <div className="form-group full-width">
-              <Rb_Label required>
+            <div
+              className="
+                flex
+                min-w-0
+                flex-col
+                gap-1
+                md:col-span-2
+              "
+            >
+              <Rb_Label
+                required
+                className="
+                  text-xs
+                  font-semibold
+                  uppercase
+                  tracking-wide
+                  text-gray-600
+                "
+              >
                 Street
               </Rb_Label>
 
               <Rb_Input
+                className="
+                  w-full
+                  rounded-lg
+                  border
+                  border-gray-300
+                  px-3
+                  text-sm
+                  text-gray-700
+                "
                 placeholder="Street"
                 disabled={isSaving}
                 {...register("street", {
-                  required: "Street is required",
+                  required:
+                    "Street is required",
                 })}
               />
 
               {errors.street && (
-                <p className="error-text">
+                <p className="text-xs text-red-600">
                   {errors.street.message}
                 </p>
               )}
             </div>
 
-            <div className="form-group">
-              <Rb_Label required>
+
+            <div className="flex min-w-0 flex-col gap-1">
+              <Rb_Label
+                required
+                className="
+                  text-xs
+                  font-semibold
+                  uppercase
+                  tracking-wide
+                  text-gray-700
+                "
+              >
                 City
               </Rb_Label>
 
               <Rb_Input
+                className="
+                  w-full
+                  rounded-lg
+                  border
+                  border-gray-300
+                  px-3
+                  text-sm
+                  text-gray-700
+                "
                 placeholder="City"
                 disabled={isSaving}
                 {...register("city", {
-                  required: "City is required",
+                  required:
+                    "City is required",
                 })}
               />
 
               {errors.city && (
-                <p className="error-text">
+                <p className="text-xs text-red-600">
                   {errors.city.message}
                 </p>
               )}
             </div>
 
-            <div className="form-group">
-              <Rb_Label required>
+
+            <div className="flex min-w-0 flex-col gap-1">
+              <Rb_Label
+                required
+                className="
+                  text-xs
+                  font-semibold
+                  uppercase
+                  tracking-wide
+                  text-gray-700
+                "
+              >
                 State
               </Rb_Label>
 
               <Rb_Input
+                className="
+                  w-full
+                  rounded-lg
+                  border
+                  border-gray-300
+                  px-3
+                  text-sm
+                  text-gray-700
+                "
                 placeholder="State"
                 disabled={isSaving}
                 {...register("state", {
-                  required: "State is required",
+                  required:
+                    "State is required",
                 })}
               />
 
               {errors.state && (
-                <p className="error-text">
+                <p className="text-xs text-red-600">
                   {errors.state.message}
                 </p>
               )}
             </div>
 
-            <div className="form-group">
-              <Rb_Label required>
+
+            <div className="flex min-w-0 flex-col gap-1">
+              <Rb_Label
+                required
+                className="
+                  text-xs
+                  font-semibold
+                  uppercase
+                  tracking-wide
+                  text-gray-700
+                "
+              >
                 Zip Code
               </Rb_Label>
 
               <Rb_Input
+                className="
+                  w-full
+                  rounded-lg
+                  border
+                  border-gray-300
+                  px-3
+                  text-sm
+                  text-gray-700
+                "
                 placeholder="Zip Code"
                 disabled={isSaving}
                 {...register("zipCode", {
-                  required: "Zip Code is required",
+                  required:
+                    "Zip Code is required",
                 })}
               />
 
               {errors.zipCode && (
-                <p className="error-text">
+                <p className="text-xs text-red-600">
                   {errors.zipCode.message}
                 </p>
               )}
             </div>
 
-            <div className="form-group">
-              <Rb_Label required>
+
+            <div className="flex min-w-0 flex-col gap-1">
+              <Rb_Label
+                required
+                className="
+                  text-xs
+                  font-semibold
+                  uppercase
+                  tracking-wide
+                  text-gray-700
+                "
+              >
                 Country
               </Rb_Label>
 
               <Rb_Input
+                className="
+                  w-full
+                  rounded-lg
+                  border
+                  border-gray-300
+                  px-3
+                  text-sm
+                  text-gray-700
+                "
                 placeholder="Country"
                 disabled={isSaving}
                 {...register("country", {
-                  required: "Country is required",
+                  required:
+                    "Country is required",
                 })}
               />
 
               {errors.country && (
-                <p className="error-text">
+                <p className="text-xs text-red-600">
                   {errors.country.message}
                 </p>
               )}
             </div>
 
-            <div className="form-group full-width">
-              <label className="checkbox-label">
+
+            <div
+              className="
+                md:col-span-2
+                pt-1
+              "
+            >
+              <label
+                className="
+                  flex
+                  cursor-pointer
+                  items-center
+                  gap-3
+                  rounded-lg
+                  border
+                  border-gray-200
+                  bg-gray-50
+                  px-4
+                  py-3
+                  text-sm
+                  font-medium
+                  text-gray-700
+                  transition
+                  hover:bg-gray-100
+                  has-[:disabled]:cursor-not-allowed
+                  has-[:disabled]:opacity-60
+                "
+              >
                 <input
                   type="checkbox"
                   disabled={isSaving}
                   {...register("isDefault")}
+                  className="
+                    h-4
+                    w-4
+                    shrink-0
+                    accent-violet-700
+                  "
                 />
-                Set as Default Address
+
+                <span>
+                  Set as Default Address
+                </span>
               </label>
             </div>
 
           </div>
 
+
           {saveError && (
-            <p className="error-text modal-error-banner">
+            <div
+              className="
+                mt-5
+                rounded-lg
+                border
+                border-red-200
+                bg-red-50
+                px-4
+                py-3
+                text-sm
+                text-red-600
+              "
+            >
               {saveError}
-            </p>
+            </div>
           )}
         </form>
 
+        <div className="shrink-0 border-t border-gray-200 bg-white px-6 py-4">
+          <div className="flex justify-end gap-3">
+            <Rb_Button
+              variant="outline"
+              onClick={handleCloseClick}
+              disabled={isSaving}
+            >
+              Cancel
+            </Rb_Button>
 
-        <div className="modal-footer">
-          <Rb_Button
-            variant="outline"
-            onClick={handleCloseClick}
-            disabled={isSaving}
-          >
-            Cancel
-          </Rb_Button>
-
-          <Rb_Button
-            type="submit"
-            form="address-form"
-            disabled={isSaving}
-          >
-            {isSaving ? (
-              <span className="save-btn-loading">
-                <span className="btn-spinner-sm" />
-                {address ? "Updating..." : "Saving..."}
-              </span>
-            ) : address ? (
-              "Update Address"
-            ) : (
-              "Save Address"
-            )}
-          </Rb_Button>
+            <Rb_Button
+              type="submit"
+              form="address-form"
+              disabled={isSaving}
+            >
+              {address ? "Update Address" : "Save Address"}
+            </Rb_Button>
+          </div>
         </div>
+
       </div>
     </div>
   );
