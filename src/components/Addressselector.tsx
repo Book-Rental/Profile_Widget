@@ -1,11 +1,6 @@
-import "./ProfileForm.css";
-import "./Addressselector.css"
+import { useEffect, useState } from "react";
+import { Rb_Button } from "@rentbook/rentbook-ui-lib";
 
-import { useState } from "react";
-import { useEffect } from "react";
-import {
-  Rb_Button,
-} from "@rentbook/rentbook-ui-lib";
 import {
   FaMapMarkerAlt,
   FaHome,
@@ -16,7 +11,6 @@ import {
   FaDotCircle,
   FaChevronDown,
   FaChevronUp,
-  FaStar,
 } from "react-icons/fa";
 
 import AddressModal from "./AddressModal";
@@ -38,16 +32,19 @@ interface AddressSelectorProps {
   showActions?: boolean;
   showAddButton?: boolean;
   visibleCount?: number;
+  layout?: "row" | "column";
 }
 
 const typeIcon = (type?: string) => {
   switch (type) {
-    case "work":
-      return <FaBriefcase size={14} />;
     case "home":
-      return <FaHome size={14} />;
+      return <FaHome size={13} />;
+
+    case "work":
+      return <FaBriefcase size={13} />;
+
     default:
-      return <FaMapMarkerAlt size={14} />;
+      return <FaMapMarkerAlt size={13} />;
   }
 };
 
@@ -64,15 +61,12 @@ const AddressSelector = ({
   showActions = true,
   showAddButton = true,
   visibleCount = 4,
+  layout = "row",
 }: AddressSelectorProps) => {
-  const [addresses, setAddresses] =
-    useState<Address[]>([]);
+  const [addresses, setAddresses] = useState<Address[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const [loading, setLoading] =
-    useState(true);
-
-  const [openAddressModal, setOpenAddressModal] =
-    useState(false);
+  const [openAddressModal, setOpenAddressModal] = useState(false);
 
   const [selectedAddress, setSelectedAddress] =
     useState<Address | null>(null);
@@ -83,10 +77,11 @@ const AddressSelector = ({
   const [internalSelectedId, setInternalSelectedId] =
     useState<string | null>(null);
 
-  const [expanded, setExpanded] =
-    useState(false);
+  const [expanded, setExpanded] = useState(false);
 
-  const [deleteTarget, setDeleteTarget] = useState<Address | null>(null);
+  const [deleteTarget, setDeleteTarget] =
+    useState<Address | null>(null);
+
   const [isDeleting, setIsDeleting] = useState(false);
 
   const activeSelectedId =
@@ -95,18 +90,19 @@ const AddressSelector = ({
       : internalSelectedId;
 
   useEffect(() => {
-    if (!userId) {
-      console.error("userId is undefined");
-      return;
-    }
+    if (!userId) return;
+
     loadAddresses();
   }, [userId]);
 
-  const loadAddresses = async () => {
+  const loadAddresses = async (silent = false) => {
     try {
-      setLoading(true);
+      if (!silent) setLoading(true);
+
       const response = await getAddresses(userId);
+
       const sorted = sortWithDefaultFirst(response.data);
+
       setAddresses(sorted);
 
       if (
@@ -114,8 +110,9 @@ const AddressSelector = ({
         internalSelectedId === null
       ) {
         const defaultAddress = sorted.find(
-          (a: Address) => a.isDefault
+          (address) => address.isDefault
         );
+
         if (defaultAddress?._id) {
           setInternalSelectedId(defaultAddress._id);
           onSelect?.(defaultAddress);
@@ -123,11 +120,13 @@ const AddressSelector = ({
       }
 
       return sorted;
-    } catch (err) {
-      console.log(err);
+    } catch (error) {
+      console.error(error);
       return [];
     } finally {
-      setLoading(false);
+      if (!silent) {
+        setLoading(false);
+      }
     }
   };
 
@@ -172,20 +171,21 @@ const AddressSelector = ({
           selectedAddress._id,
           address
         );
+
         savedId = selectedAddress._id;
       } else {
         const created = await addAddress(
           userId,
           address
         );
+
         savedId = created?.data?._id ?? null;
       }
 
-      const refreshed = await loadAddresses();
-
+      const refreshed = await loadAddresses(true);
 
       const savedAddress = refreshed.find(
-        (a: Address) => a._id === savedId
+        (item) => item._id === savedId
       );
 
       if (savedAddress?.isDefault) {
@@ -193,11 +193,10 @@ const AddressSelector = ({
       }
 
       setOpenAddressModal(false);
-
       setSelectedAddress(null);
-    } catch (err) {
-      console.log(err);
-      throw err;
+    } catch (error) {
+      console.error(error);
+      throw error;
     }
   };
 
@@ -213,23 +212,41 @@ const AddressSelector = ({
     if (!deleteTarget?._id) return;
 
     setIsDeleting(true);
-    try {
-      await deleteAddress(userId, deleteTarget._id);
 
-      if (activeSelectedId === deleteTarget._id) {
-        if (selectedAddressId === undefined) {
-          setInternalSelectedId(null);
-        }
+    try {
+      await deleteAddress(
+        userId,
+        deleteTarget._id
+      );
+
+      setAddresses((prev) =>
+        prev.filter(
+          (item) => item._id !== deleteTarget._id
+        )
+      );
+
+      if (
+        activeSelectedId === deleteTarget._id &&
+        selectedAddressId === undefined
+      ) {
+        setInternalSelectedId(null);
       }
 
-      await loadAddresses();
-
-      showToast("Address deleted successfully.", "success");
+      showToast(
+        "Address deleted successfully.",
+        "success"
+      );
 
       setDeleteTarget(null);
-    } catch (err) {
-      console.log(err);
-      showToast("Failed to delete address. Please try again.", "error");
+
+      await loadAddresses(true);
+    } catch (error) {
+      console.error(error);
+
+      showToast(
+        "Failed to delete address.",
+        "error"
+      );
     } finally {
       setIsDeleting(false);
     }
@@ -241,36 +258,60 @@ const AddressSelector = ({
   ) => {
     e.stopPropagation();
 
-    if (!address._id || address.isDefault || settingDefaultId) return;
+    if (
+      !address._id ||
+      address.isDefault ||
+      settingDefaultId
+    ) {
+      return;
+    }
 
     const addressId = address._id;
+
     const previousAddresses = addresses;
-    const previousSelectedId = internalSelectedId;
+    const previousSelectedId =
+      internalSelectedId;
 
     setSettingDefaultId(addressId);
-    const optimistic = sortWithDefaultFirst(
-      addresses.map((a) => ({
-        ...a,
-        isDefault: a._id === addressId,
-      }))
-    );
-    setAddresses(optimistic);
-    selectAddress({ ...address, isDefault: true });
+
+    const optimisticAddresses =
+      sortWithDefaultFirst(
+        addresses.map((item) => ({
+          ...item,
+          isDefault:
+            item._id === addressId,
+        }))
+      );
+
+    setAddresses(optimisticAddresses);
+
+    selectAddress({
+      ...address,
+      isDefault: true,
+    });
 
     try {
       await updateAddress(
         userId,
         addressId,
-        { ...address, isDefault: true }
+        {
+          ...address,
+          isDefault: true,
+        }
       );
 
-      await loadAddresses();
-    } catch (err) {
-      console.log(err);
+      await loadAddresses(true);
+    } catch (error) {
+      console.error(error);
 
       setAddresses(previousAddresses);
-      if (selectedAddressId === undefined) {
-        setInternalSelectedId(previousSelectedId);
+
+      if (
+        selectedAddressId === undefined
+      ) {
+        setInternalSelectedId(
+          previousSelectedId
+        );
       }
     } finally {
       setSettingDefaultId(null);
@@ -279,285 +320,296 @@ const AddressSelector = ({
 
   const visibleAddresses = expanded
     ? addresses
-    : addresses.slice(0, visibleCount);
+    : addresses.slice(
+      0,
+      visibleCount
+    );
 
-  const hiddenCount = addresses.length - visibleAddresses.length;
+  const hiddenCount =
+    addresses.length -
+    visibleAddresses.length;
 
   return (
     <>
-      <div className="profile-card address-select-container">
+      {/* <div className="w-full text-left"> */}
+    <div className=" w-full text-left rounded-2xl border border-gray-200 bg-white p-6 shadow-[0_1px_2px_rgba(16,24,40,0.04),0_12px_32px_rgba(16,24,40,0.06)] sm:p-10">
 
-        <div className="address-header-row">
+        {/* Header — always a row: title left, button right, on every screen size */}
 
-          <div>
-            <h2 className="address-title">
+        <div className="mb-4 flex flex-row items-center justify-between gap-3">
+          <div className="text-left">
+            <h2 className="text-xl font-bold text-gray-900">
               Select Address
             </h2>
-            <p className="address-subtitle">
-              Choose an address for this order
+
+            <p className="mt-1 text-sm text-gray-500">
+              Choose the delivery address for this order.
             </p>
           </div>
 
           {showAddButton && addresses.length > 0 && (
-            <Rb_Button
-              variant="outline"
-              className="add-address-btn"
+            <button
+              type="button"
               onClick={handleAddAddress}
+              className="inline-flex flex-shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-lg border border-violet-600 px-3 py-2 text-sm font-semibold text-violet-700 transition hover:bg-violet-50"
             >
-              <FaPlus size={12} style={{ marginRight: 8 }} />
+              <FaPlus size={12} />
               Add Address
-            </Rb_Button>
+            </button>
           )}
-
         </div>
 
+        {/* Loading */}
+
         {loading ? (
-          <div className="address-skeleton-grid">
-            <div className="address-skeleton" />
-            <div className="address-skeleton" />
+          <div className="flex h-[320px] items-center justify-center">
+            {/* Spinner handled by parent */}
           </div>
         ) : addresses.length === 0 ? (
-          <div className="empty-address">
 
-            <div className="address-icon">
-              <FaMapMarkerAlt size={22} />
+          <div className="flex min-h-[280px] flex-col items-center justify-center rounded-2xl border border-dashed border-gray-300 bg-gray-50 px-8 py-10 text-center">
+
+            <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-violet-100 text-violet-700">
+              <FaMapMarkerAlt size={26} />
             </div>
 
-            <h3>No addresses added yet</h3>
+            <h3 className="text-lg font-semibold text-gray-900">
+              No addresses added yet
+            </h3>
 
-            <p>
+            <p className="mt-2 max-w-md text-sm leading-6 text-gray-500">
               {showAddButton
-                ? "Add an address so we know where to reach you."
-                : "No saved addresses found."}
+                ? "Add your first address to continue with book rentals and deliveries."
+                : "No saved addresses available."}
             </p>
 
             {showAddButton && (
-              <Rb_Button onClick={handleAddAddress}>
-                <FaPlus size={12} style={{ marginRight: 8 }} />
+              <button
+                type="button"
+                onClick={handleAddAddress}
+                className="mt-5 inline-flex items-center gap-2 rounded-lg bg-violet-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-violet-700"
+              >
+                <FaPlus size={12} />
                 Add Address
-              </Rb_Button>
+              </button>
             )}
-
           </div>
+
         ) : (
           <>
-            <div className="address-select-grid">
+            {/* Address Grid */}
 
-              {visibleAddresses.map(
-                (item, index) => {
-                  const isSelected =
-                    !!item._id && item._id === activeSelectedId;
+            <div
+              className={`grid gap-3 ${layout === "column"
+                  ? "grid-cols-1"
+                  : "grid-cols-1 lg:grid-cols-2"
+                }`}
+            >
+              {visibleAddresses.map((item, index) => {
+                const isSelected =
+                  !!item._id &&
+                  item._id === activeSelectedId;
 
-                  const isSettingDefault =
-                    !!item._id && item._id === settingDefaultId;
+                const isSettingDefault =
+                  !!item._id &&
+                  item._id === settingDefaultId;
 
-                  const isBusy = !!settingDefaultId;
+                const isBusy = !!settingDefaultId;
 
-                  return (
-                    <div
-                      key={item._id || index}
-                      className={
-                        "address-select-card" +
-                        (isSelected ? " address-select-card--active" : "") +
-                        (isSettingDefault ? " address-select-card--busy" : "")
+                return (
+                  <div
+                    key={item._id || index}
+                    role="radio"
+                    aria-checked={isSelected}
+                    aria-busy={isSettingDefault}
+                    tabIndex={isBusy ? -1 : 0}
+                    onClick={() => handleSelect(item)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        handleSelect(item);
                       }
-                      onClick={() => handleSelect(item)}
-                      role="radio"
-                      aria-checked={isSelected}
-                      aria-busy={isSettingDefault}
-                      tabIndex={isBusy ? -1 : 0}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" || e.key === " ") {
-                          e.preventDefault();
-                          handleSelect(item);
-                        }
-                      }}
-                    >
-                      {isSettingDefault && (
-                        <div className="address-card-loading-overlay">
-                          <span className="card-spinner" />
-                          <span className="address-card-loading-text">
-                            Setting as default…
-                          </span>
-                        </div>
-                      )}
+                    }}
+                    className={`relative flex h-full min-h-[190px] flex-col cursor-pointer rounded-lg border bg-white p-5 text-left transition-all duration-200
+  ${isSelected
+                        ? "border-violet-600 ring-1 ring-violet-100 shadow-sm"
+                        : "border-gray-200 hover:border-violet-300 hover:shadow-sm"
+                      }`}
+                  >
+                    {isSettingDefault && (
+                      <div className="absolute inset-0 z-20 flex items-center justify-center rounded-lg bg-white/70 backdrop-blur-sm">
+                        <div className="h-6 w-6 animate-spin rounded-full border-[3px] border-violet-200 border-t-violet-600" />
+                      </div>
+                    )}
 
-                      <div className="address-select-radio">
+                    <div className="flex flex-1 items-start gap-3">
+                      <div className="pt-0.5">
                         {isSelected ? (
-                          <FaDotCircle size={18} />
+                          <FaDotCircle size={17} className="text-violet-600" />
                         ) : (
-                          <FaRegCircle size={18} />
+                          <FaRegCircle size={17} className="text-gray-300" />
                         )}
                       </div>
 
-                      <div className="address-select-body">
-
-                        <div className="address-header">
-
-                          <div className="address-name-row">
-                            <span className="address-type-icon">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex min-w-0 gap-3">
+                            <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md bg-violet-50 text-violet-600">
                               {typeIcon(item.type)}
-                            </span>
-
-                            <div>
-                              <h4>{item.name || "Address"}</h4>
-                              <span className="address-type">
+                            </div>
+                            <div className="min-w-0">
+                              <h4 className="truncate text-[15px] font-semibold text-gray-900">
+                                {item.name || "Address"}
+                              </h4>
+                              <span className="text-xs capitalize text-gray-400">
                                 {item.type}
                               </span>
                             </div>
                           </div>
 
                           {item.isDefault && (
-                            <span className="default-badge">
-                              <FaStar size={10} />
+                            <span className="flex-shrink-0 rounded-full bg-violet-100 px-2.5 py-1 text-[10px] font-semibold text-violet-700">
                               Default
                             </span>
                           )}
-
                         </div>
 
-                        <div className="address-details">
+                        <div className="mt-4 space-y-1 text-sm leading-snug text-gray-600">
                           <p>{item.street}</p>
-                          <p>{item.city}, {item.state}</p>
-                          <p>{item.country} - {item.zipCode}</p>
+                          <p>
+                            {item.city}, {item.state} · {item.country} - {item.zipCode}
+                          </p>
                         </div>
 
-                        <p className="address-phone">
+                        <div className="mt-3 flex items-center gap-1.5 text-sm text-gray-400">
                           <FaPhoneAlt size={11} />
-                          {item.phone}
-                        </p>
-
-                        {showActions && (
-                          <div className="address-links-row">
-                            <button
-                              type="button"
-                              className="link-btn"
-                              onClick={(e) => handleEditAddress(e, item)}
-                            >
-                              Edit
-                            </button>
-
-                            <span className="link-sep">|</span>
-
-                            <button
-                              type="button"
-                              className="link-btn link-btn--danger"
-                              onClick={(e) => handleDeleteAddress(e, item)}
-                            >
-                              Remove
-                            </button>
-
-                            {!item.isDefault && (
-                              <>
-                                <span className="link-sep">|</span>
-                                <button
-                                  type="button"
-                                  className="link-btn"
-                                  onClick={(e) => handleSetDefault(e, item)}
-                                  disabled={isSettingDefault}
-                                >
-                                  {isSettingDefault ? (
-                                    <>
-                                      <span className="btn-spinner-sm" />
-                                      Setting...
-                                    </>
-                                  ) : (
-                                    "Set as Default"
-                                  )}
-                                </button>
-                              </>
-                            )}
-                          </div>
-                        )}
-
+                          <span>{item.phone}</span>
+                        </div>
                       </div>
                     </div>
-                  );
-                }
-              )}
 
+                    {showActions && (
+                      <div className="mt-4 flex flex-wrap gap-4 border-t border-gray-100 pt-4 pl-[29px] text-sm">
+                        <button onClick={(e) => handleEditAddress(e, item)} className="font-medium text-blue-600 hover:underline">
+                          Edit
+                        </button>
+                        <button onClick={(e) => handleDeleteAddress(e, item)} className="font-medium text-red-600 hover:underline">
+                          Remove
+                        </button>
+                        {!item.isDefault && (
+                          <button
+                            disabled={isSettingDefault}
+                            onClick={(e) => handleSetDefault(e, item)}
+                            className="font-medium text-violet-600 hover:underline disabled:opacity-50"
+                          >
+                            {isSettingDefault ? "Setting..." : "Set Default"}
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
 
+            {/* Show More / Show Less */}
+
             {addresses.length > visibleCount && (
-              <button
-                type="button"
-                className="show-more-btn"
-                onClick={() => setExpanded((prev) => !prev)}
-              >
-                {expanded ? (
-                  <>
-                    Show less
-                    <FaChevronUp size={11} />
-                  </>
-                ) : (
-                  <>
-                    Show {hiddenCount} more
-                    <FaChevronDown size={11} />
-                  </>
-                )}
-              </button>
+              <div className="mt-6">
+                <button
+                  type="button"
+                  onClick={() => setExpanded((prev) => !prev)}
+                  className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-violet-300 bg-violet-50 px-4 py-2.5 text-sm font-semibold text-violet-700 transition hover:bg-violet-100"
+                >
+                  {expanded ? (
+                    <>
+                      Show Less
+                      <FaChevronUp size={12} />
+                    </>
+                  ) : (
+                    <>
+                      Show {hiddenCount} More
+                      <FaChevronDown size={12} />
+                    </>
+                  )}
+                </button>
+              </div>
             )}
 
+            {/* Delete Confirmation */}
 
             {deleteTarget && (
               <div
-                className="confirm-modal-overlay"
-                onClick={() => !isDeleting && setDeleteTarget(null)}
+                className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
+                onClick={() =>
+                  !isDeleting && setDeleteTarget(null)
+                }
               >
                 <div
-                  className="confirm-modal"
                   onClick={(e) => e.stopPropagation()}
-                  role="dialog"
-                  aria-modal="true"
+                  className="w-full max-w-md rounded-2xl bg-white p-6 text-left shadow-2xl"
                 >
-                  <h3 className="confirm-modal-title">Delete this address?</h3>
-                  <p className="confirm-modal-text">
-                    This action cannot be undone. Are you sure you want to remove{" "}
-                    <strong>{deleteTarget.name || "this address"}</strong>?
+                  <h3 className="text-xl font-bold text-gray-900">
+                    Delete Address?
+                  </h3>
+
+                  <p className="mt-3 text-sm leading-6 text-gray-500">
+                    Are you sure you want to permanently remove
+                    <span className="font-semibold text-gray-900">
+                      {" "}
+                      {deleteTarget.name || "this address"}
+                    </span>
+                    ? This action cannot be undone.
                   </p>
 
-                  <div className="confirm-modal-actions">
+                  <div className="mt-8 flex justify-end gap-3">
+
                     <Rb_Button
                       variant="outline"
-                      onClick={() => setDeleteTarget(null)}
                       disabled={isDeleting}
+                      onClick={() =>
+                        setDeleteTarget(null)
+                      }
                     >
                       Cancel
                     </Rb_Button>
 
                     <Rb_Button
-                      className="confirm-modal-danger-btn"
-                      onClick={confirmDeleteAddress}
                       disabled={isDeleting}
+                      onClick={confirmDeleteAddress}
+                      className="!border-red-600 !bg-red-600 hover:!bg-red-700"
                     >
                       {isDeleting ? (
-                        <>
-                          <span className="btn-spinner-sm" />
+                        <span className="flex items-center gap-2">
+                          <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
                           Deleting...
-                        </>
+                        </span>
                       ) : (
                         "Delete"
                       )}
                     </Rb_Button>
+
                   </div>
                 </div>
               </div>
             )}
+
           </>
         )}
       </div>
 
       <AddressModal
         isOpen={openAddressModal}
+        address={selectedAddress}
         onClose={() => {
           setOpenAddressModal(false);
           setSelectedAddress(null);
         }}
         onSave={handleSaveAddress}
-        address={selectedAddress}
       />
     </>
   );
+
 };
 
 export default AddressSelector;

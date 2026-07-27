@@ -1,8 +1,6 @@
-import "./LocationPicker.css";
 import { useState } from "react";
 import { FaLocationArrow } from "react-icons/fa";
 import { showToast } from "../utils/showToast";
-
 
 const OPENCAGE_API_KEY = import.meta.env.VITE_OPENCAGE_API_KEY;
 
@@ -36,7 +34,10 @@ const LocationPicker = ({
 
   const getCurrentLocation = () => {
     if (!navigator.geolocation) {
-      showToast("Geolocation is not supported by this browser.", "error");
+      showToast(
+        "Geolocation is not supported by this browser.",
+        "error"
+      );
       return;
     }
 
@@ -64,12 +65,21 @@ const LocationPicker = ({
               addressComponents: result.components,
             });
 
-            showToast("Location detected successfully.", "success");
+            showToast(
+              "Location detected successfully.",
+              "success"
+            );
           } else {
-            showToast("Unable to fetch address for this location.", "error");
+            showToast(
+              "Unable to fetch address for this location.",
+              "error"
+            );
           }
         } catch (err) {
-          showToast("Failed to fetch location. Please try again.", "error");
+          showToast(
+            "Failed to fetch location. Please try again.",
+            "error"
+          );
         } finally {
           setLoading(false);
         }
@@ -79,16 +89,31 @@ const LocationPicker = ({
 
         switch (err.code) {
           case err.PERMISSION_DENIED:
-            showToast("Location permission denied.", "error");
+            showToast(
+              "Location permission denied.",
+              "error"
+            );
             break;
+
           case err.POSITION_UNAVAILABLE:
-            showToast("Location unavailable.", "error");
+            showToast(
+              "Location unavailable.",
+              "error"
+            );
             break;
+
           case err.TIMEOUT:
-            showToast("Location request timed out.", "error");
+            showToast(
+              "Location request timed out.",
+              "error"
+            );
             break;
+
           default:
-            showToast("Unable to get your location.", "error");
+            showToast(
+              "Unable to get your location.",
+              "error"
+            );
         }
       },
       {
@@ -99,17 +124,76 @@ const LocationPicker = ({
   };
 
   return (
-    <div className="location-picker">
+    <div className="w-auto shrink-0">
       <button
         type="button"
-        className="use-location-btn"
         onClick={getCurrentLocation}
         disabled={loading}
+        aria-label="Use Current Location"
+        title="Use Current Location"
+        className="
+        group
+        flex
+        h-9
+        w-9
+        shrink-0
+        items-center
+        justify-center
+        gap-2
+        rounded-full
+        border
+        border-violet-700
+        bg-white
+        text-violet-700
+        transition-all
+        duration-150
+        ease-in-out
+
+        hover:bg-violet-700
+        hover:text-white
+        hover:shadow-[0_4px_12px_rgba(109,40,217,0.25)]
+
+        focus:outline-none
+        focus:ring-2
+        focus:ring-violet-200
+        focus:ring-offset-1
+
+        disabled:cursor-not-allowed
+        disabled:opacity-60
+        disabled:hover:bg-white
+        disabled:hover:text-violet-700
+        disabled:hover:shadow-none
+
+        sm:h-[42px]
+        sm:w-auto
+        sm:justify-start
+        sm:px-4
+      "
       >
-        <span className="use-location-icon">
+        <span
+          className="
+          flex
+          h-6
+          w-6
+          min-w-6
+          shrink-0
+          items-center
+          justify-center
+          rounded-full
+          bg-violet-50
+          text-violet-700
+          transition-colors
+          duration-150
+          group-hover:bg-white/20
+          group-hover:text-white
+        "
+        >
           <FaLocationArrow size={11} />
         </span>
-        {loading ? "Locating..." : "Use Current Location"}
+
+        <span className="hidden whitespace-nowrap text-xs font-semibold sm:inline">
+          {loading ? "Locating..." : "Use Current Location"}
+        </span>
       </button>
     </div>
   );
