@@ -302,23 +302,25 @@ const ProfileForm = ({ userId }: ProfileFormProps) => {
       <div className="grid gap-5">
 
         <div className="flex flex-col gap-2">
-          <Rb_Label required>Email</Rb_Label>
+<Rb_Label htmlFor="email" required>
+  Email
+</Rb_Label>
 
           <div className="[&>input]:h-11 [&>input]:w-full [&>input]:rounded-lg [&>input]:border [&>input]:border-gray-200 [&>input]:bg-gray-50 [&>input]:px-3 [&>input]:text-gray-500  [&>input]:!cursor-not-allowed" >
-            <Rb_Input
-              disabled
-              {...register("email")}
-            />
+           <Rb_Input
+  id="email"
+  disabled
+  {...register("email")}
+/>
           </div>
         </div>
 
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
 
           <div className="flex flex-col gap-2">
-            <Rb_Label required>
-              First Name
-            </Rb_Label>
-
+           <Rb_Label htmlFor="firstName" required>
+  First Name
+</Rb_Label>
             <div
               className={
                 isEdit
@@ -326,17 +328,18 @@ const ProfileForm = ({ userId }: ProfileFormProps) => {
                   : "[&>input]:h-11 [&>input]:w-full [&>input]:rounded-lg [&>input]:border [&>input]:border-gray-200 [&>input]:bg-gray-50 [&>input]:px-3 [&>input]:text-gray-500  [&>input]:!cursor-not-allowed"
               }
             >
-              <Rb_Input
-                disabled={!isEdit || isSaving}
-                {...register("firstName")}
-              />
+             <Rb_Input
+  id="firstName"
+  disabled={!isEdit || isSaving}
+  {...register("firstName")}
+/>
             </div>
           </div>
 
           <div className="flex flex-col gap-2">
-            <Rb_Label required>
-              Last Name
-            </Rb_Label>
+          <Rb_Label htmlFor="lastName" required>
+  Last Name
+</Rb_Label>
 
             <div
               className={
@@ -345,10 +348,11 @@ const ProfileForm = ({ userId }: ProfileFormProps) => {
                   : "[&>input]:h-11 [&>input]:w-full [&>input]:rounded-lg [&>input]:border [&>input]:border-gray-200 [&>input]:bg-gray-50 [&>input]:px-3 [&>input]:text-gray-500  [&>input]:!cursor-not-allowed"
               }
             >
-              <Rb_Input
-                disabled={!isEdit || isSaving}
-                {...register("lastName")}
-              />
+            <Rb_Input
+  id="lastName"
+  disabled={!isEdit || isSaving}
+  {...register("lastName")}
+/>
             </div>
           </div>
 

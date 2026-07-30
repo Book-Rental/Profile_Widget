@@ -19,7 +19,7 @@ export interface LocationData {
     postcode?: string;
     country?: string;
     county?: string;
-    [key: string]: any;
+    [key: string]: string | undefined;
   };
 }
 
@@ -43,7 +43,7 @@ const LocationPicker = ({
 
     setLoading(true);
 
-    navigator.geolocation.getCurrentPosition(
+  navigator.geolocation.getCurrentPosition(
       async (position) => {
         try {
           const latitude = position.coords.latitude;
@@ -75,7 +75,7 @@ const LocationPicker = ({
               "error"
             );
           }
-        } catch (err) {
+        } catch {
           showToast(
             "Failed to fetch location. Please try again.",
             "error"
@@ -89,31 +89,19 @@ const LocationPicker = ({
 
         switch (err.code) {
           case err.PERMISSION_DENIED:
-            showToast(
-              "Location permission denied.",
-              "error"
-            );
+            showToast("Location permission denied.", "error");
             break;
 
           case err.POSITION_UNAVAILABLE:
-            showToast(
-              "Location unavailable.",
-              "error"
-            );
+            showToast("Location unavailable.", "error");
             break;
 
           case err.TIMEOUT:
-            showToast(
-              "Location request timed out.",
-              "error"
-            );
+            showToast("Location request timed out.", "error");
             break;
 
           default:
-            showToast(
-              "Unable to get your location.",
-              "error"
-            );
+            showToast("Unable to get your location.", "error");
         }
       },
       {
@@ -122,7 +110,6 @@ const LocationPicker = ({
       }
     );
   };
-
   return (
     <div className="w-auto shrink-0">
       <button
