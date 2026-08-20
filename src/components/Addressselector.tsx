@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Rb_Button } from "@rentbook/rentbook-ui-lib";
+import { Rb_Button, Rb_LoadingSpinner } from "@rentbook/rentbook-ui-lib";
 
 import {
   FaMapMarkerAlt,
@@ -332,7 +332,7 @@ const AddressSelector = ({
   return (
     <>
       {/* <div className="w-full text-left"> */}
-    <div className=" w-full text-left rounded-2xl border border-gray-200 bg-white p-6 shadow-[0_1px_2px_rgba(16,24,40,0.04),0_12px_32px_rgba(16,24,40,0.06)] sm:p-10">
+      <div className=" w-full text-left rounded-2xl border border-gray-200 bg-white p-6 shadow-[0_1px_2px_rgba(16,24,40,0.04),0_12px_32px_rgba(16,24,40,0.06)] sm:p-10">
 
         {/* Header — always a row: title left, button right, on every screen size */}
 
@@ -363,7 +363,7 @@ const AddressSelector = ({
 
         {loading ? (
           <div className="flex h-[320px] items-center justify-center">
-            {/* Spinner handled by parent */}
+            <Rb_LoadingSpinner />
           </div>
         ) : addresses.length === 0 ? (
 
@@ -401,8 +401,8 @@ const AddressSelector = ({
 
             <div
               className={`grid gap-3 ${layout === "column"
-                  ? "grid-cols-1"
-                  : "grid-cols-1 lg:grid-cols-2"
+                ? "grid-cols-1"
+                : "grid-cols-1 lg:grid-cols-2"
                 }`}
             >
               {visibleAddresses.map((item, index) => {
