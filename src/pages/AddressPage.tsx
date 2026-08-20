@@ -28,7 +28,7 @@ const AddressPage = () => {
             <div className="w-full max-w-[760px]">
                 <AddressSelector
                     userId={userId}
-                    showActions={false}
+                    // showActions={false}
                     // showAddButton={false}
                     selectedAddressId={currentAddressId}
                     onSelect={handleAddressSelect}
