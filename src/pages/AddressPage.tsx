@@ -24,7 +24,7 @@ const AddressPage = () => {
     };
 
     return (
-        <div className="flex w-full justify-center p-4">
+        <div className="flex w-full justify-center">
             <div className="w-full max-w-[760px]">
                 <AddressSelector
                     userId={userId}
